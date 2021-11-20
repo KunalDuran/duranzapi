@@ -14,6 +14,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+var DATASET_BASE = "/home/kunalduran/Desktop/duranz_api/"
+
 // GetCricsheetData : Reads the match json file
 func GetCricsheetData(f_path string) (Match, error) {
 	var matchData Match
