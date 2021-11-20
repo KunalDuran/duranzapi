@@ -182,11 +182,8 @@ func GetScoreCard(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	objScoreCard.Result = resultStr
 	objScoreCard.Innings = AllInnings
 
-	strScoreCard, err := json.Marshal(objScoreCard)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	util.WebResponse(w, r, http.StatusOK, string(strScoreCard))
+	final := util.JSONMessageWrappedObj(http.StatusOK, objScoreCard)
+	util.WebResponseJSONObject(w, r, http.StatusOK, final)
 
 	// ioutil.WriteFile(`C:\Users\Kunal\Desktop\Duranz\duranz_api\scoreCard.json`, strScoreCard, 0777)
 }

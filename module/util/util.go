@@ -18,10 +18,10 @@ import (
 
 var LicenseText = "Duranz API"
 
-type JsonMessageContent struct {
-	Company    string `json:"company"`
-	StatusCode int    `json:"statusCode"`
-	Content    string `json:"content"`
+type JsonWrappedContent struct {
+	License    string      `json:"license"`
+	StatusCode int         `json:"statusCode"`
+	Content    interface{} `json:"content"`
 }
 
 func CleanText(text string, lowerCase bool) string {
@@ -54,23 +54,6 @@ func PrintJSON(j interface{}) error {
 	return err
 }
 
-// JSONMessage returns a preformatted ISG JSON with the response code and message.
-func JSONMessage(code int, msg string) []byte {
-	jsonString := JsonMessageContent{
-		Company:    LicenseText,
-		StatusCode: code,
-		Content:    msg,
-	}
-
-	//result, err := json.Marshal(jsonString)
-	result, err := json.MarshalIndent(jsonString, "", "    ")
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return result
-}
-
 // JSONMessageObj returns an encoded JSON of the object provided.
 func JSONMessageObj(obj interface{}) []byte {
 
@@ -82,13 +65,28 @@ func JSONMessageObj(obj interface{}) []byte {
 	return result
 }
 
-// WebResponse is a wrapper function for returning a web response that includes a standard text message.
-func WebResponse(w http.ResponseWriter, r *http.Request, code int, message string) {
-
-	w.Header().Set("Access-Control-Allow-Origin", "*") // To
+// WebResponseJSONObject is a wrapper function that returns an already prepared JSON object as web response.
+func WebResponseJSONObject(w http.ResponseWriter, r *http.Request, code int, obj interface{}) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	w.Write(JSONMessage(code, message))
+	w.Write(obj.([]byte))
+}
+
+// JSONMessageObj returns an encoded JSON of the object provided.
+func JSONMessageWrappedObj(code int, obj interface{}) []byte {
+	jsonString := JsonWrappedContent{
+		License:    LicenseText,
+		StatusCode: code,
+		Content:    obj,
+	}
+
+	result, err := json.MarshalIndent(jsonString, "", "    ")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return result
 }
 
 // makeRandomString : Make the randon string of certain length
