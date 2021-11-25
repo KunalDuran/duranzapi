@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -14,7 +13,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
-var DATASET_BASE = "/home/kunalduran/Desktop/duranz_api/"
+var DATASET_BASE = "/home/kunalduran/Desktop/duranz_api/dev/all_json/"
 
 // GetCricsheetData : Reads the match json file
 func GetCricsheetData(f_path string) (Match, error) {
@@ -32,7 +31,8 @@ func GetCricsheetData(f_path string) (Match, error) {
 }
 
 func GetScoreCard(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	match, err := GetCricsheetData(`/home/kunalduran/Desktop/duranz_api/dev/all_json/433606.json`)
+	jsonID := p.ByName("file")
+	match, err := GetCricsheetData(DATASET_BASE + jsonID + `.json`)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -147,7 +147,7 @@ func GetScoreCard(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var allBatsman []Batting
 		for _, batter := range objBatsman {
 			if batter.Balls > 0 {
-				batter.StrikeRate = math.Round((float64(batter.Runs)*100)/float64(batter.Balls)/0.01) * 0.01
+				batter.StrikeRate = util.Round((float64(batter.Runs)*100)/float64(batter.Balls), 0.01, 2)
 			}
 			if batter.Out == "" {
 				batter.Out = "not out"
@@ -158,7 +158,7 @@ func GetScoreCard(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var allBowler []Bowling
 		for _, bowler := range objBowler {
 			if bowler.Balls > 0 {
-				bowler.Economy = math.Round(float64(bowler.Runs)/(float64(bowler.Balls)/float64(6))/0.01) * 0.01
+				bowler.Economy = util.Round(float64(bowler.Runs)/(float64(bowler.Balls)/float64(6)), 0.01, 2)
 			}
 			bowler.Overs = fmt.Sprint(bowler.Balls/6) + "." + fmt.Sprint(bowler.Balls%6)
 			allBowler = append(allBowler, bowler)
