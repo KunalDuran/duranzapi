@@ -1,5 +1,7 @@
 package sports
 
+import "database/sql"
+
 type Match struct {
 	Meta struct {
 		DataVersion string `json:"data_version"`
@@ -121,4 +123,112 @@ type Extras struct {
 	Byes    int `json:"byes"`
 	LegByes int `json:"legbyes"`
 	Total   int `json:"total"`
+}
+
+type PlayerDetailsInt struct {
+	PlayerID        sql.NullInt64
+	PlayerName      sql.NullString
+	DisplayName     sql.NullString
+	FirstName       sql.NullString
+	LastName        sql.NullString
+	ShortName       sql.NullString
+	UniqueShortName sql.NullString
+	DOB             sql.NullString
+	BattingStyle    sql.NullString
+	BowlingStyle    sql.NullString
+	IsOverseas      sql.NullInt64
+	CricSheetID     sql.NullString
+	DateAdded       sql.NullString
+	Status          sql.NullInt64
+}
+
+type PlayerDetailsExt struct {
+	PlayerID        int64  `json:"player_id"`
+	PlayerName      string `json:"player_name"`
+	DisplayName     string `json:"display_name"`
+	FirstName       string `json:"first_name"`
+	LastName        string `json:"last_name"`
+	ShortName       string `json:"short_name"`
+	UniqueShortName string `json:"unique_short_name"`
+	DOB             string `json:"dob"`
+	BattingStyle    string `json:"batting_style"`
+	BowlingStyle    string `json:"bowling_style"`
+	IsOverseas      int64  `json:"is_overseas"`
+	CricSheetID     string `json:"cricsheet_id"`
+	DateAdded       string `json:"date_added"`
+	Status          int64  `json:"status"`
+}
+
+type TeamDetailsInt struct {
+	TeamID     sql.NullInt64
+	TeamName   sql.NullString
+	TeamType   sql.NullString
+	FilterName sql.NullString
+	ABBR       sql.NullString
+	TeamColor  sql.NullString
+	Icon       sql.NullString
+	URL        sql.NullString
+	Jersey     sql.NullString
+	Flag       sql.NullString
+	Status     sql.NullInt64
+	DateAdded  sql.NullString
+}
+
+type TeamDetailsExt struct {
+	TeamID     int64  `json:"team_id"`
+	TeamName   string `json:"team_name"`
+	TeamType   string `json:"team_type"`
+	FilterName string `json:"filter_name"`
+	ABBR       string `json:"abbr"`
+	TeamColor  string `json:"team_color"`
+	Icon       string `json:"icon"`
+	URL        string `json:"url"`
+	Jersey     string `json:"jersey"`
+	Flag       string `json:"flag"`
+	Status     int64  `json:"status"`
+	DateAdded  string `json:"date_added"`
+}
+
+type VenueDetailsInt struct {
+	VenueID      sql.NullInt64
+	Venue        sql.NullString
+	FilterName   sql.NullString
+	FriendlyName sql.NullString
+	City         sql.NullString
+	Country      sql.NullString
+	State        sql.NullString
+	StateABBR    sql.NullString
+	OfficialTeam sql.NullString
+	Capacity     sql.NullString
+	Dimension    sql.NullString
+	Opened       sql.NullString
+	Description  sql.NullString
+	ShortName    sql.NullString
+	TimeZone     sql.NullString
+	Weather      sql.NullString
+	PitchType    sql.NullString
+	DateAdded    sql.NullString
+	Status       sql.NullInt64
+}
+
+type VenueDetailsExt struct {
+	VenueID      int64  `json:"venue_id"`
+	Venue        string `json:"venue_name"`
+	FilterName   string `json:"filter_name"`
+	FriendlyName string `json:"friendly_name"`
+	City         string `json:"city"`
+	Country      string `json:"country"`
+	State        string `json:"state"`
+	StateABBR    string `json:"state_abbr"`
+	OfficialTeam string `json:"official_team"`
+	Capacity     string `json:"capacity"`
+	Dimension    string `json:"dimension"`
+	Opened       string `json:"opened"`
+	Description  string `json:"description"`
+	ShortName    string `json:"short_name"`
+	TimeZone     string `json:"time_zone"`
+	Weather      string `json:"weather"`
+	PitchType    string `json:"pitch_type"`
+	DateAdded    string `json:"date_added"`
+	Status       int64  `json:"status"`
 }

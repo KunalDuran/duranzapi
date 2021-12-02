@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/KunalDuran/duranzapi/module/cms"
 	"github.com/KunalDuran/duranzapi/module/sports"
 	"github.com/julienschmidt/httprouter"
 )
@@ -13,6 +14,16 @@ func addRouteHandlers(router *httprouter.Router) {
 	// General links
 	router.GET("/", index)
 	router.GET("/scorecard/:file", sports.GetScoreCard)
+
+	// CMS
+
+	router.GET("/cms/missing/players", cms.GetMissingPlayerDetails)
+	router.GET("/cms/missing/teams", cms.GetMissingTeamDetails)
+	router.GET("/cms/missing/venues", cms.GetMissingVenueDetails)
+
+	router.POST("/cms/mapping/players", cms.MapPlayerDetails)
+	router.POST("/cms/mapping/teams", cms.MapPlayerDetails)
+	router.POST("/cms/mapping/venues", cms.MapVenueDetails)
 
 }
 
