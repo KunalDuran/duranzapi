@@ -2,6 +2,9 @@ package data
 
 import (
 	"database/sql"
+	"io/ioutil"
+	"net/http"
+	"time"
 
 	"github.com/KunalDuran/duranzapi/module/sports"
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
@@ -21,6 +24,35 @@ func InitDB(host, port, user, password string) (sportsDb *sql.DB, err error) {
 		return nil, err
 	}
 	return SportsDb, nil
+}
+
+// RequestAPIData - Calls a (API) URL and return the data from the request.
+func RequestAPIData(url string, headers map[string]string) ([]byte, int, error) {
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, 500, err
+	}
+
+	for key, value := range headers {
+		req.Header.Add(key, value)
+	}
+
+	client := http.Client{}
+	client.Timeout = time.Duration(120 * time.Second)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, 500, err
+	}
+	statusCode := resp.StatusCode
+
+	// read body
+	body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return nil, statusCode, err
+	}
+	return body, statusCode, nil
 }
 
 func GetPlayerDetails() []sports.PlayerDetailsInt {

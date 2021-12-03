@@ -16,13 +16,14 @@ func addRouteHandlers(router *httprouter.Router) {
 	router.GET("/scorecard/:file", sports.GetScoreCard)
 
 	// CMS
+	router.GET("/cms/display", cms.DisplayPageCMS)
 
 	router.GET("/cms/missing/players", cms.GetMissingPlayerDetails)
 	router.GET("/cms/missing/teams", cms.GetMissingTeamDetails)
 	router.GET("/cms/missing/venues", cms.GetMissingVenueDetails)
 
 	router.POST("/cms/mapping/players", cms.MapPlayerDetails)
-	router.POST("/cms/mapping/teams", cms.MapPlayerDetails)
+	router.POST("/cms/mapping/teams", cms.MapTeamDetails)
 	router.POST("/cms/mapping/venues", cms.MapVenueDetails)
 
 }
