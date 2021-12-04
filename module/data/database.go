@@ -58,7 +58,11 @@ func RequestAPIData(url string, headers map[string]string) ([]byte, int, error) 
 func GetPlayerDetails() []sports.PlayerDetailsInt {
 	var objAllPlayer = []sports.PlayerDetailsInt{}
 
-	sqlStr := `SELECT * FROM duranz_cricket_players`
+	sqlStr := `SELECT * FROM duranz_cricket_players WHERE 
+		(display_name IS NULL or display_name='') OR 
+		(first_name IS NULL or first_name='') OR
+		(last_name IS NULL or last_name='') OR
+		(dob IS NULL)`
 
 	rows, err := SportsDb.Query(sqlStr)
 	if err != nil {
@@ -128,7 +132,8 @@ func GetTeamDetails() []sports.TeamDetailsInt {
 func GetVenueDetails() []sports.VenueDetailsInt {
 	var objAllVenue = []sports.VenueDetailsInt{}
 
-	sqlStr := `SELECT * FROM duranz_venue`
+	sqlStr := `SELECT * FROM duranz_venue WHERE 
+				(city IS NULL OR city='') OR (state IS NULL OR state='') OR (country IS NULL OR country='')`
 
 	rows, err := SportsDb.Query(sqlStr)
 	if err != nil {

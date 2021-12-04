@@ -134,8 +134,8 @@ type PlayerDetailsInt struct {
 	ShortName       sql.NullString
 	UniqueShortName sql.NullString
 	DOB             sql.NullString
-	BattingStyle    sql.NullString
-	BowlingStyle    sql.NullString
+	BattingStyle    sql.NullInt64
+	BowlingStyle    sql.NullInt64
 	IsOverseas      sql.NullInt64
 	CricSheetID     sql.NullString
 	DateAdded       sql.NullString
@@ -151,8 +151,8 @@ type PlayerDetailsExt struct {
 	ShortName       string `json:"short_name"`
 	UniqueShortName string `json:"unique_short_name"`
 	DOB             string `json:"dob"`
-	BattingStyle    string `json:"batting_style"`
-	BowlingStyle    string `json:"bowling_style"`
+	BattingStyle    int64  `json:"batting_style"`
+	BowlingStyle    int64  `json:"bowling_style"`
 	IsOverseas      int64  `json:"is_overseas"`
 	CricSheetID     string `json:"cricsheet_id"`
 	DateAdded       string `json:"date_added"`

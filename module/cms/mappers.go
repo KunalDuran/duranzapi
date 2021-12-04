@@ -17,6 +17,10 @@ import (
 func DisplayPageCMS(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 	param := r.URL.Query().Get("page")
+	offset := r.URL.Query().Get("offset")
+	var offsetInt int64
+	offsetInt, _ = strconv.ParseInt(offset, 10, 64)
+
 	if param != "players" && param != "venues" && param != "teams" {
 		w.Write([]byte("This is CMS Page, Pass players, venues or teams in query param 'page'"))
 		return
@@ -45,7 +49,14 @@ func DisplayPageCMS(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 		if err != nil {
 			panic(err)
 		}
-		tmpl.Execute(w, finalPlayers.Content)
+		if len(finalPlayers.Content) == 0 {
+			w.Write([]byte("This is CMS Page, No missing player details"))
+			return
+		}
+		if len(finalPlayers.Content) < int(offsetInt)+1 {
+			offsetInt = 0
+		}
+		tmpl.Execute(w, finalPlayers.Content[offsetInt])
 
 	case "teams":
 
@@ -57,7 +68,14 @@ func DisplayPageCMS(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 		if err != nil {
 			panic(err)
 		}
-		tmpl.Execute(w, finalTeams.Content)
+		if len(finalTeams.Content) == 0 {
+			w.Write([]byte("This is CMS Page, No missing team details"))
+			return
+		}
+		if len(finalTeams.Content) < int(offsetInt)+1 {
+			offsetInt = 0
+		}
+		tmpl.Execute(w, finalTeams.Content[offsetInt])
 
 	case "venues":
 
@@ -69,7 +87,14 @@ func DisplayPageCMS(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 		if err != nil {
 			panic(err)
 		}
-		tmpl.Execute(w, finalVenues.Content[0])
+		if len(finalVenues.Content) == 0 {
+			w.Write([]byte("This is CMS Page, No missing Venue details"))
+			return
+		}
+		if len(finalVenues.Content) < int(offsetInt)+1 {
+			offsetInt = 0
+		}
+		tmpl.Execute(w, finalVenues.Content[offsetInt])
 	}
 }
 
@@ -89,8 +114,8 @@ func GetMissingPlayerDetails(w http.ResponseWriter, r *http.Request, p httproute
 		finalPlayer.ShortName = objPlayer.ShortName.String
 		finalPlayer.UniqueShortName = objPlayer.UniqueShortName.String
 		finalPlayer.DOB = objPlayer.DOB.String
-		finalPlayer.BattingStyle = objPlayer.BattingStyle.String
-		finalPlayer.BowlingStyle = objPlayer.BowlingStyle.String
+		finalPlayer.BattingStyle = objPlayer.BattingStyle.Int64
+		finalPlayer.BowlingStyle = objPlayer.BowlingStyle.Int64
 		finalPlayer.IsOverseas = objPlayer.IsOverseas.Int64
 		finalPlayer.CricSheetID = objPlayer.CricSheetID.String
 		finalPlayer.DateAdded = objPlayer.DateAdded.String
@@ -184,37 +209,40 @@ func MapVenueDetails(w http.ResponseWriter, r *http.Request, p httprouter.Params
 	finalVenue.TimeZone = r.FormValue("timezone")
 	finalVenue.Weather = r.FormValue("weather")
 	finalVenue.PitchType = r.FormValue("pitch_type")
-	time.Now().Format("2006-01-02 15:04:05")
 	finalVenue.DateAdded = time.Now().Format("2006-01-02 15:04:05")
 	venueStatus, _ := strconv.ParseInt(r.FormValue("status"), 10, 64)
 	finalVenue.Status = venueStatus
 
 	data.InsertVenueDetails(finalVenue)
-	http.Redirect(w, r, "/cms/missing/venues", 200)
+	http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
 }
 
 func MapPlayerDetails(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	var finalPlayer sports.PlayerDetailsExt
 
-	playerIDInt, _ := strconv.ParseInt(r.FormValue(""), 10, 64)
+	playerIDInt, _ := strconv.ParseInt(r.FormValue("player_id"), 10, 64)
 	finalPlayer.PlayerID = playerIDInt
-	finalPlayer.PlayerName = r.Form.Get("")
-	finalPlayer.DisplayName = r.Form.Get("")
-	finalPlayer.FirstName = r.Form.Get("")
-	finalPlayer.LastName = r.Form.Get("")
-	finalPlayer.ShortName = r.Form.Get("")
-	finalPlayer.UniqueShortName = r.Form.Get("")
-	finalPlayer.DOB = r.Form.Get("")
-	finalPlayer.BattingStyle = r.Form.Get("")
-	finalPlayer.BowlingStyle = r.Form.Get("")
-	overseasInt, _ := strconv.ParseInt(r.FormValue(""), 10, 64)
+	finalPlayer.PlayerName = r.FormValue("player_name")
+	finalPlayer.DisplayName = r.FormValue("display_name")
+	finalPlayer.FirstName = r.FormValue("first_name")
+	finalPlayer.LastName = r.FormValue("last_name")
+	finalPlayer.ShortName = r.FormValue("short_name")
+	finalPlayer.UniqueShortName = r.FormValue("unique_short_name")
+	dobFormat, _ := time.Parse("2006-01-02", r.FormValue("dob"))
+	finalPlayer.DOB = dobFormat.Format("2006-01-02")
+	battingStyleInt, _ := strconv.ParseInt(r.FormValue("batting_style"), 10, 64)
+	bowlingStyleInt, _ := strconv.ParseInt(r.FormValue("bowling_style"), 10, 64)
+	finalPlayer.BattingStyle = battingStyleInt
+	finalPlayer.BowlingStyle = bowlingStyleInt
+	overseasInt, _ := strconv.ParseInt(r.FormValue("is_overseas"), 10, 64)
 	finalPlayer.IsOverseas = overseasInt
-	finalPlayer.CricSheetID = r.Form.Get("")
-	finalPlayer.DateAdded = r.Form.Get("")
-	statusInt, _ := strconv.ParseInt(r.FormValue(""), 10, 64)
+	finalPlayer.CricSheetID = r.FormValue("cricsheet_id")
+	finalPlayer.DateAdded = time.Now().Format("2006-01-02 15:04:05")
+	statusInt, _ := strconv.ParseInt(r.FormValue("status"), 10, 64)
 	finalPlayer.Status = statusInt
 
 	data.InsertPlayerDetails(finalPlayer)
+	http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
 }
 
 func MapTeamDetails(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -222,18 +250,20 @@ func MapTeamDetails(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 
 	teamIDInt, _ := strconv.ParseInt(r.FormValue(""), 10, 64)
 	finalTeam.TeamID = teamIDInt
-	finalTeam.TeamName = r.Form.Get("")
-	finalTeam.TeamType = r.Form.Get("")
-	finalTeam.FilterName = r.Form.Get("")
-	finalTeam.ABBR = r.Form.Get("")
-	finalTeam.TeamColor = r.Form.Get("")
-	finalTeam.Icon = r.Form.Get("")
-	finalTeam.URL = r.Form.Get("")
-	finalTeam.Jersey = r.Form.Get("")
-	finalTeam.Flag = r.Form.Get("")
+	finalTeam.TeamName = r.FormValue("")
+	finalTeam.TeamType = r.FormValue("")
+	finalTeam.FilterName = r.FormValue("")
+	finalTeam.ABBR = r.FormValue("")
+	finalTeam.TeamColor = r.FormValue("")
+	finalTeam.Icon = r.FormValue("")
+	finalTeam.URL = r.FormValue("")
+	finalTeam.Jersey = r.FormValue("")
+	finalTeam.Flag = r.FormValue("")
 	statusInt, _ := strconv.ParseInt(r.FormValue(""), 10, 64)
 	finalTeam.Status = statusInt
-	finalTeam.DateAdded = r.Form.Get("")
+	finalTeam.DateAdded = r.FormValue("")
 
 	data.InsertTeamDetails(finalTeam)
+	http.Redirect(w, r, r.Header.Get("Referer"), http.StatusFound)
+
 }
