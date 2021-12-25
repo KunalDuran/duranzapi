@@ -318,16 +318,20 @@ type PlayerBattingStats struct {
 	Ducks          int64   `json:"ducks,omitempty"`
 }
 type PlayerBowlingStats struct {
-	BowlingOrder   int64  `json:"bowling_order,omitempty"`
-	BallsBowled    int64  `json:"balls_bowled,omitempty"`
-	DotsBowled     int64  `json:"dots_bowled,omitempty"`
-	ExtrasConceded int64  `json:"extras_conceded,omitempty"`
-	FoursConceded  int64  `json:"fours_conceded,omitempty"`
-	MaidenOver     int64  `json:"maiden_over,omitempty"`
-	OversBowled    string `json:"overs_bowled,omitempty"`
-	RunsConceded   int64  `json:"runs_conceded,omitempty"`
-	SixesConceded  int64  `json:"sixes_conceded,omitempty"`
-	WicketsTaken   int64  `json:"wickets_taken,omitempty"`
+	BowlingOrder   int64   `json:"bowling_order,omitempty"`
+	BallsBowled    int64   `json:"balls_bowled,omitempty"`
+	DotsBowled     int64   `json:"dots_bowled,omitempty"`
+	ExtrasConceded int64   `json:"extras_conceded,omitempty"`
+	FoursConceded  int64   `json:"fours_conceded,omitempty"`
+	MaidenOver     int64   `json:"maiden_over,omitempty"`
+	OversBowled    string  `json:"overs_bowled,omitempty"`
+	RunsConceded   int64   `json:"runs_conceded,omitempty"`
+	SixesConceded  int64   `json:"sixes_conceded,omitempty"`
+	WicketsTaken   int64   `json:"wickets_taken,omitempty"`
+	Economy        float64 `json:"economy,omitempty"`
+	Average        float64 `json:"average,omitempty"`
+	Fifers         float64 `json:"fifers,omitempty"`
+	BestBowling    string  `json:"best_bowling,omitempty"`
 }
 type PlayerFieldingStats struct {
 	RunOut    int64 `json:"run_out,omitempty"`

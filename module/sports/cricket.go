@@ -259,12 +259,27 @@ func PlayerStatsAPI(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 			playerFinal.Bowling.RunsConceded += pstat.RunsConceded.Int64
 			playerFinal.Bowling.SixesConceded += pstat.SixesConceded.Int64
 			playerFinal.Bowling.WicketsTaken += pstat.WicketsTaken.Int64
+			if pstat.WicketsTaken.Int64 >= 5 {
+				playerFinal.Bowling.Fifers++
+			}
+			if playerFinal.Bowling.BestBowling != "" {
+				bowlingFigures := strings.Split(playerFinal.Bowling.BestBowling, "/")
+				wickets, runs := bowlingFigures[0], bowlingFigures[1]
+				wicketsInt, _ := strconv.ParseInt(wickets, 10, 64)
+				runsInt, _ := strconv.ParseInt(runs, 10, 64)
+				if wicketsInt < pstat.WicketsTaken.Int64 {
+					playerFinal.Bowling.BestBowling = fmt.Sprint(pstat.WicketsTaken.Int64) + "/" + fmt.Sprint(pstat.RunsConceded.Int64)
+				} else if wicketsInt == pstat.WicketsTaken.Int64 && runsInt > pstat.RunsConceded.Int64 {
+					playerFinal.Bowling.BestBowling = fmt.Sprint(pstat.WicketsTaken.Int64) + "/" + fmt.Sprint(pstat.RunsConceded.Int64)
+				}
+			} else {
+				playerFinal.Bowling.BestBowling = fmt.Sprint(pstat.WicketsTaken.Int64) + "/" + fmt.Sprint(pstat.RunsConceded.Int64)
+			}
 
 			// bind fieling stats
 			playerFinal.Fielding.Catches += pstat.Catches.Int64
 			playerFinal.Fielding.Stumpings += pstat.Stumpings.Int64
 			playerFinal.Fielding.RunOut += pstat.RunOut.Int64
-
 		}
 		if playerFinal.Bowling.BallsBowled > 0 {
 			playerFinal.Bowling.OversBowled = fmt.Sprint(playerFinal.Bowling.BallsBowled/6) + "." + fmt.Sprint(playerFinal.Bowling.BallsBowled%6)
@@ -272,6 +287,9 @@ func PlayerStatsAPI(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 
 		playerFinal.Batting.Average = util.Round((float64(playerFinal.Batting.RunsScored))/float64(playerFinal.Batting.IsBatted-playerFinal.Batting.NotOuts), 0.01, 2)
 		playerFinal.Batting.StrikeRate = util.Round((float64(playerFinal.Batting.RunsScored)*100)/float64(playerFinal.Batting.BallsFaced), 0.01, 2)
+
+		playerFinal.Bowling.Average = util.Round((float64(playerFinal.Bowling.RunsConceded))/float64(playerFinal.Bowling.WicketsTaken), 0.01, 2)
+		playerFinal.Bowling.Economy = util.Round((float64(playerFinal.Bowling.RunsConceded))/(float64(playerFinal.Bowling.BallsBowled)/6), 0.01, 2)
 
 		playerFinalAll = append(playerFinalAll, playerFinal)
 	}
