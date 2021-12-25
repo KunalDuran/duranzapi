@@ -26,6 +26,9 @@ func addRouteHandlers(router *httprouter.Router) {
 	router.POST("/cms/mapping/teams", cms.MapTeamDetails)
 	router.POST("/cms/mapping/venues", cms.MapVenueDetails)
 
+	// API
+	router.GET("/player-stats/:player", sports.PlayerStatsAPI)
+
 }
 
 // Plain index page content

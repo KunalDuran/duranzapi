@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/KunalDuran/duranzapi/module/data"
-	"github.com/KunalDuran/duranzapi/module/sports"
 	"github.com/KunalDuran/duranzapi/module/util"
 	"github.com/julienschmidt/httprouter"
 )
@@ -42,7 +41,7 @@ func DisplayPageCMS(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 	case "players":
 
 		finalPlayers := struct {
-			Content []sports.PlayerDetailsExt `json:"content"`
+			Content []data.PlayerDetailsExt `json:"content"`
 		}{}
 		err = json.Unmarshal(body, &finalPlayers)
 		fmt.Println(len(finalPlayers.Content))
@@ -61,7 +60,7 @@ func DisplayPageCMS(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 	case "teams":
 
 		finalTeams := struct {
-			Content []sports.PlayerDetailsExt `json:"content"`
+			Content []data.PlayerDetailsExt `json:"content"`
 		}{}
 		err = json.Unmarshal(body, &finalTeams)
 		fmt.Println(len(finalTeams.Content))
@@ -80,7 +79,7 @@ func DisplayPageCMS(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 	case "venues":
 
 		finalVenues := struct {
-			Content []sports.VenueDetailsExt `json:"content"`
+			Content []data.VenueDetailsExt `json:"content"`
 		}{}
 		err = json.Unmarshal(body, &finalVenues)
 		fmt.Println(len(finalVenues.Content))
@@ -101,10 +100,10 @@ func DisplayPageCMS(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 func GetMissingPlayerDetails(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	objPlayers := data.GetPlayerDetails()
 
-	var finalPlayers []sports.PlayerDetailsExt
+	var finalPlayers []data.PlayerDetailsExt
 	for _, objPlayer := range objPlayers {
 
-		var finalPlayer sports.PlayerDetailsExt
+		var finalPlayer data.PlayerDetailsExt
 
 		finalPlayer.PlayerID = objPlayer.PlayerID.Int64
 		finalPlayer.PlayerName = objPlayer.PlayerName.String
@@ -131,10 +130,10 @@ func GetMissingPlayerDetails(w http.ResponseWriter, r *http.Request, p httproute
 func GetMissingTeamDetails(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	objTeams := data.GetTeamDetails()
 
-	var finalTeams []sports.TeamDetailsExt
+	var finalTeams []data.TeamDetailsExt
 	for _, objTeam := range objTeams {
 
-		var finalTeam sports.TeamDetailsExt
+		var finalTeam data.TeamDetailsExt
 
 		finalTeam.TeamID = objTeam.TeamID.Int64
 		finalTeam.TeamName = objTeam.TeamName.String
@@ -159,10 +158,10 @@ func GetMissingTeamDetails(w http.ResponseWriter, r *http.Request, p httprouter.
 func GetMissingVenueDetails(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	objVenues := data.GetVenueDetails()
 
-	var finalVenues []sports.VenueDetailsExt
+	var finalVenues []data.VenueDetailsExt
 	for _, objVenue := range objVenues {
 
-		var finalVenue sports.VenueDetailsExt
+		var finalVenue data.VenueDetailsExt
 		finalVenue.VenueID = objVenue.VenueID.Int64
 		finalVenue.Venue = objVenue.Venue.String
 		finalVenue.FilterName = objVenue.FilterName.String
@@ -190,7 +189,7 @@ func GetMissingVenueDetails(w http.ResponseWriter, r *http.Request, p httprouter
 }
 
 func MapVenueDetails(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	var finalVenue sports.VenueDetailsExt
+	var finalVenue data.VenueDetailsExt
 	venueIDInt, _ := strconv.ParseInt(r.FormValue("venue_id"), 10, 64)
 	finalVenue.VenueID = venueIDInt
 	finalVenue.Venue = r.FormValue("venue_name")
@@ -218,7 +217,7 @@ func MapVenueDetails(w http.ResponseWriter, r *http.Request, p httprouter.Params
 }
 
 func MapPlayerDetails(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	var finalPlayer sports.PlayerDetailsExt
+	var finalPlayer data.PlayerDetailsExt
 
 	playerIDInt, _ := strconv.ParseInt(r.FormValue("player_id"), 10, 64)
 	finalPlayer.PlayerID = playerIDInt
@@ -246,7 +245,7 @@ func MapPlayerDetails(w http.ResponseWriter, r *http.Request, p httprouter.Param
 }
 
 func MapTeamDetails(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	var finalTeam sports.TeamDetailsExt
+	var finalTeam data.TeamDetailsExt
 
 	teamIDInt, _ := strconv.ParseInt(r.FormValue(""), 10, 64)
 	finalTeam.TeamID = teamIDInt

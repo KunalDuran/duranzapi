@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/KunalDuran/duranzapi/module/data"
 	"github.com/KunalDuran/duranzapi/module/util"
 
 	"github.com/julienschmidt/httprouter"
@@ -16,8 +17,8 @@ import (
 var DATASET_BASE = "/home/kunalduran/Desktop/duranz_api/dev/all_json/"
 
 // GetCricsheetData : Reads the match json file
-func GetCricsheetData(f_path string) (Match, error) {
-	var matchData Match
+func GetCricsheetData(f_path string) (data.Match, error) {
+	var matchData data.Match
 	body, err := ioutil.ReadFile(f_path)
 	if err != nil {
 		return matchData, err
@@ -38,18 +39,18 @@ func GetScoreCard(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	var objScoreCard ScoreCard
+	var objScoreCard data.ScoreCard
 
-	var AllInnings []Innings
+	var AllInnings []data.Innings
 	for _, inning := range match.Innings {
 		fmt.Println("Scorecard process started innings for : ", inning.Team)
 
-		var objInning Innings
+		var objInning data.Innings
 		objInning.InningDetail = inning.Team
 
-		var objExtra Extras
-		var objBatsman = map[string]Batting{}
-		var objBowler = map[string]Bowling{}
+		var objExtra data.Extras
+		var objBatsman = map[string]data.Batting{}
+		var objBowler = map[string]data.Bowling{}
 		var batsmanCount, bowlerCount, runningScore, wicketCnt int
 		var fowArr []string
 		var overRuns = map[int]int{}
@@ -64,7 +65,7 @@ func GetScoreCard(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 				// Batsman Init
 				if _, exist := objBatsman[delivery.Batter]; !exist {
 					batsmanCount++
-					var tempBat Batting
+					var tempBat data.Batting
 					tempBat.ID = batsmanCount
 					tempBat.Name = delivery.Batter
 					objBatsman[delivery.Batter] = tempBat
@@ -76,7 +77,7 @@ func GetScoreCard(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 				// Bowler Init
 				if _, exist := objBowler[delivery.Bowler]; !exist {
 					bowlerCount++
-					var tempBowler Bowling
+					var tempBowler data.Bowling
 					tempBowler.ID = bowlerCount
 					tempBowler.Name = delivery.Bowler
 					objBowler[delivery.Bowler] = tempBowler
@@ -92,7 +93,7 @@ func GetScoreCard(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 				}
 
 				// Calculate Extras
-				if delivery.Extras != (Extras{}) {
+				if delivery.Extras != (data.Extras{}) {
 					if delivery.Extras.Byes > 0 {
 						objExtra.Byes += delivery.Extras.Byes
 						overRuns[over.Over] -= delivery.Extras.Byes
@@ -144,7 +145,7 @@ func GetScoreCard(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 			}
 		}
 
-		var allBatsman []Batting
+		var allBatsman []data.Batting
 		for _, batter := range objBatsman {
 			if batter.Balls > 0 {
 				batter.StrikeRate = util.Round((float64(batter.Runs)*100)/float64(batter.Balls), 0.01, 2)
@@ -155,7 +156,7 @@ func GetScoreCard(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 			allBatsman = append(allBatsman, batter)
 		}
 
-		var allBowler []Bowling
+		var allBowler []data.Bowling
 		for _, bowler := range objBowler {
 			if bowler.Balls > 0 {
 				bowler.Economy = util.Round(float64(bowler.Runs)/(float64(bowler.Balls)/float64(6)), 0.01, 2)
@@ -186,4 +187,96 @@ func GetScoreCard(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	util.WebResponseJSONObject(w, r, http.StatusOK, final)
 
 	// ioutil.WriteFile(`C:\Users\Kunal\Desktop\Duranz\duranz_api\scoreCard.json`, strScoreCard, 0777)
+}
+
+func PlayerStatsAPI(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	playerName := p.ByName("player")
+	bio := r.URL.Query().Get("bio")
+	format := util.CleanText(r.URL.Query().Get("format"), true)
+	season := util.CleanText(r.URL.Query().Get("season"), true)
+
+	if playerName == "all" {
+		// do something
+	}
+	if bio != "true" {
+		bio = ""
+	}
+
+	var playerFinalAll []data.PlayerStatsExt
+	objAllPlayerStats := data.GetPlayerStats(playerName, format, season)
+
+	for pname, pstats := range objAllPlayerStats {
+		var playerFinal data.PlayerStatsExt
+
+		// General Stats
+		playerFinal.TeamID = pstats[0].TeamID.Int64
+		playerFinal.PlayerID = pstats[0].PlayerID.Int64
+		playerFinal.PlayerName = pname
+
+		// playerFinal.InningsID += pstat.InningsID.Int64
+		// playerFinal.OutBowler += pstat.OutBowler.Int64
+		// playerFinal.OutFielder += pstat.OutFielder.Int64
+		// playerFinal.OutType += pstat.OutType.Int64
+		playerFinal.SeasonID = season
+		// playerFinal.SeasonType += pstat.SeasonType.Int64
+
+		for _, pstat := range pstats {
+
+			// bind batting stats
+			playerFinal.Batting.BallsFaced += pstat.BallsFaced.Int64
+			// playerFinal.Batting.BattingOrder += pstat.BattingOrder.Int64
+			playerFinal.Batting.DotBallsPlayed += pstat.DotBallsPlayed.Int64
+			playerFinal.Batting.Doubles += pstat.Doubles.Int64
+			playerFinal.Batting.FoursHit += pstat.FoursHit.Int64
+			playerFinal.Batting.RunsScored += pstat.RunsScored.Int64
+			playerFinal.Batting.Singles += pstat.Singles.Int64
+			playerFinal.Batting.SixesHit += pstat.SixesHit.Int64
+			playerFinal.Batting.Triples += pstat.Triples.Int64
+			playerFinal.Batting.IsBatted += pstat.IsBatted.Int64
+			if pstat.RunsScored.Int64 >= 100 {
+				playerFinal.Batting.Hundreds++
+			} else if pstat.RunsScored.Int64 >= 50 {
+				playerFinal.Batting.Fifties++
+			}
+			if pstat.OutType.String == "not out" {
+				playerFinal.Batting.NotOuts++
+			}
+			if pstat.RunsScored.Int64 == 0 && pstat.OutType.String != "not out" && pstat.OutType.String != "" {
+				playerFinal.Batting.Ducks++
+			}
+
+			if pstat.RunsScored.Int64 > playerFinal.Batting.HighestScore {
+				playerFinal.Batting.HighestScore = pstat.RunsScored.Int64
+			}
+
+			// bind bowling stats
+			// playerFinal.Bowling.BowlingOrder += pstat.BowlingOrder.Int64
+			playerFinal.Bowling.DotsBowled += pstat.DotsBowled.Int64
+			playerFinal.Bowling.MaidenOver += pstat.MaidenOver.Int64
+			playerFinal.Bowling.BallsBowled += pstat.BallsBowled.Int64
+			playerFinal.Bowling.ExtrasConceded += pstat.ExtrasConceded.Int64
+			playerFinal.Bowling.FoursConceded += pstat.FoursConceded.Int64
+			playerFinal.Bowling.RunsConceded += pstat.RunsConceded.Int64
+			playerFinal.Bowling.SixesConceded += pstat.SixesConceded.Int64
+			playerFinal.Bowling.WicketsTaken += pstat.WicketsTaken.Int64
+
+			// bind fieling stats
+			playerFinal.Fielding.Catches += pstat.Catches.Int64
+			playerFinal.Fielding.Stumpings += pstat.Stumpings.Int64
+			playerFinal.Fielding.RunOut += pstat.RunOut.Int64
+
+		}
+		if playerFinal.Bowling.BallsBowled > 0 {
+			playerFinal.Bowling.OversBowled = fmt.Sprint(playerFinal.Bowling.BallsBowled/6) + "." + fmt.Sprint(playerFinal.Bowling.BallsBowled%6)
+		}
+
+		playerFinal.Batting.Average = util.Round((float64(playerFinal.Batting.RunsScored))/float64(playerFinal.Batting.IsBatted-playerFinal.Batting.NotOuts), 0.01, 2)
+		playerFinal.Batting.StrikeRate = util.Round((float64(playerFinal.Batting.RunsScored)*100)/float64(playerFinal.Batting.BallsFaced), 0.01, 2)
+
+		playerFinalAll = append(playerFinalAll, playerFinal)
+	}
+
+	final := util.JSONMessageWrappedObj(http.StatusOK, playerFinalAll)
+	util.WebResponseJSONObject(w, r, http.StatusOK, final)
+
 }

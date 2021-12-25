@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
-	"github.com/KunalDuran/duranzapi/module/sports"
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
 )
 
@@ -55,8 +55,8 @@ func RequestAPIData(url string, headers map[string]string) ([]byte, int, error) 
 	return body, statusCode, nil
 }
 
-func GetPlayerDetails() []sports.PlayerDetailsInt {
-	var objAllPlayer = []sports.PlayerDetailsInt{}
+func GetPlayerDetails() []PlayerDetailsInt {
+	var objAllPlayer = []PlayerDetailsInt{}
 
 	sqlStr := `SELECT * FROM duranz_cricket_players WHERE 
 		(display_name IS NULL or display_name='') OR 
@@ -70,7 +70,7 @@ func GetPlayerDetails() []sports.PlayerDetailsInt {
 	}
 
 	for rows.Next() {
-		var objPlayer sports.PlayerDetailsInt
+		var objPlayer PlayerDetailsInt
 		err = rows.Scan(
 			&objPlayer.PlayerID,
 			&objPlayer.PlayerName,
@@ -95,8 +95,8 @@ func GetPlayerDetails() []sports.PlayerDetailsInt {
 	return objAllPlayer
 }
 
-func GetTeamDetails() []sports.TeamDetailsInt {
-	var objAllTeams = []sports.TeamDetailsInt{}
+func GetTeamDetails() []TeamDetailsInt {
+	var objAllTeams = []TeamDetailsInt{}
 
 	sqlStr := `SELECT * FROM duranz_teams`
 
@@ -106,7 +106,7 @@ func GetTeamDetails() []sports.TeamDetailsInt {
 	}
 
 	for rows.Next() {
-		var objTeam sports.TeamDetailsInt
+		var objTeam TeamDetailsInt
 		err = rows.Scan(
 			&objTeam.TeamID,
 			&objTeam.TeamName,
@@ -129,8 +129,8 @@ func GetTeamDetails() []sports.TeamDetailsInt {
 	return objAllTeams
 }
 
-func GetVenueDetails() []sports.VenueDetailsInt {
-	var objAllVenue = []sports.VenueDetailsInt{}
+func GetVenueDetails() []VenueDetailsInt {
+	var objAllVenue = []VenueDetailsInt{}
 
 	sqlStr := `SELECT * FROM duranz_venue WHERE 
 				(city IS NULL OR city='') OR (state IS NULL OR state='') OR (country IS NULL OR country='')`
@@ -141,7 +141,7 @@ func GetVenueDetails() []sports.VenueDetailsInt {
 	}
 
 	for rows.Next() {
-		var objVenue sports.VenueDetailsInt
+		var objVenue VenueDetailsInt
 		err = rows.Scan(
 			&objVenue.VenueID,
 			&objVenue.Venue,
@@ -171,7 +171,7 @@ func GetVenueDetails() []sports.VenueDetailsInt {
 	return objAllVenue
 }
 
-func InsertPlayerDetails(objPlayer sports.PlayerDetailsExt) {
+func InsertPlayerDetails(objPlayer PlayerDetailsExt) {
 
 	sqlStr := `INSERT INTO duranz_cricket_players(player_id,player_name,display_name,first_name,last_name,
 		short_name,unique_short_name,dob,batting_style_1_id,bowling_style_1_id,is_overseas,cricsheet_id,
@@ -206,7 +206,7 @@ func InsertPlayerDetails(objPlayer sports.PlayerDetailsExt) {
 	}
 }
 
-func InsertTeamDetails(objTeam sports.TeamDetailsExt) {
+func InsertTeamDetails(objTeam TeamDetailsExt) {
 
 	sqlStr := `INSERT INTO duranz_teams(
 		team_id,team_name,team_type,filtername,abbreviation,team_color,icon,url,jersey,flag,status,dateadded) 
@@ -237,7 +237,7 @@ func InsertTeamDetails(objTeam sports.TeamDetailsExt) {
 	}
 }
 
-func InsertVenueDetails(objVenue sports.VenueDetailsExt) {
+func InsertVenueDetails(objVenue VenueDetailsExt) {
 
 	sqlStr := `INSERT INTO duranz_venue (
 		venue_id,venue,filtername,friendlyname,city,country,state,state_abbr,official_team,capacity,
@@ -278,4 +278,109 @@ func InsertVenueDetails(objVenue sports.VenueDetailsExt) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func GetPlayerStats(playerName, league, season string) map[string][]PlayerStatsInt {
+	objAllPlayerStats := map[string][]PlayerStatsInt{}
+	var seasonCond string
+
+	leagueID := AllDuranzLeagues[league]
+	if season != "" {
+		seasonID, err := strconv.ParseInt(season, 10, 64)
+		if err == nil && seasonID > 1950 {
+			seasonCond = " AND pms.season_id = " + season
+		}
+	}
+
+	sqlStr := `SELECT player.player_name, 
+	pms.match_id               ,
+	pms.balls_bowled           ,
+    pms.balls_faced            ,
+    pms.batting_order          ,
+    pms.bowling_order          ,
+    pms.catches                ,
+    pms.dot_balls_played       ,
+    pms.dots_bowled            ,
+    pms.doubles                ,
+    pms.extras_conceded        ,
+    pms.fours_conceded         ,
+    pms.fours_hit              ,
+    pms.innings_id             ,
+    pms.is_batted              ,
+    pms.last_update            ,
+    pms.maiden_over            ,
+    pms.out_bowler             ,
+    pms.out_fielder            ,
+    pms.out_type               ,
+    pms.overs_bowled           ,
+    pms.played_abandoned_matches ,
+    pms.player_id              ,
+    pms.run_out                ,
+    pms.runs_conceded          ,
+    pms.runs_scored            ,
+    pms.season_id              ,
+    pms.season_type            ,
+    pms.singles                ,
+    pms.sixes_conceded         ,
+    pms.sixes_hit              ,
+    pms.stumpings              ,
+    pms.team_id                ,
+    pms.triples                ,
+    pms.wickets_taken  
+	FROM duranz_cricket_players as player
+	LEFT JOIN duranz_player_match_stats AS pms ON pms.player_id = player.player_id 
+	LEFT JOIN duranz_cricket_matches matches ON matches.match_id = pms.match_id 
+	WHERE player_name = ? AND league_id= ? ` + seasonCond
+
+	rows, err := SportsDb.Query(sqlStr, playerName, leagueID)
+	if err != nil {
+		panic(err)
+	}
+
+	for rows.Next() {
+		var objPlayerStats PlayerStatsInt
+		var playerDisplayName string
+		err = rows.Scan(
+			&playerDisplayName,
+			&objPlayerStats.MatchID,
+			&objPlayerStats.BallsBowled,
+			&objPlayerStats.BallsFaced,
+			&objPlayerStats.BattingOrder,
+			&objPlayerStats.BowlingOrder,
+			&objPlayerStats.Catches,
+			&objPlayerStats.DotBallsPlayed,
+			&objPlayerStats.DotsBowled,
+			&objPlayerStats.Doubles,
+			&objPlayerStats.ExtrasConceded,
+			&objPlayerStats.FoursConceded,
+			&objPlayerStats.FoursHit,
+			&objPlayerStats.InningsID,
+			&objPlayerStats.IsBatted,
+			&objPlayerStats.LastUpdate,
+			&objPlayerStats.MaidenOver,
+			&objPlayerStats.OutBowler,
+			&objPlayerStats.OutFielder,
+			&objPlayerStats.OutType,
+			&objPlayerStats.OversBowled,
+			&objPlayerStats.PlayedAbandonedMatches,
+			&objPlayerStats.PlayerID,
+			&objPlayerStats.RunOut,
+			&objPlayerStats.RunsConceded,
+			&objPlayerStats.RunsScored,
+			&objPlayerStats.SeasonID,
+			&objPlayerStats.SeasonType,
+			&objPlayerStats.Singles,
+			&objPlayerStats.SixesConceded,
+			&objPlayerStats.SixesHit,
+			&objPlayerStats.Stumpings,
+			&objPlayerStats.TeamID,
+			&objPlayerStats.Triples,
+			&objPlayerStats.WicketsTaken,
+		)
+		if err != nil {
+			panic(err)
+		}
+		objAllPlayerStats[playerDisplayName] = append(objAllPlayerStats[playerDisplayName], objPlayerStats)
+	}
+	return objAllPlayerStats
 }

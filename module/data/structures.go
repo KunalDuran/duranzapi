@@ -1,6 +1,14 @@
-package sports
+package data
 
 import "database/sql"
+
+var AllDuranzLeagues = map[string]int{
+	"ODI":                   1,
+	"Test":                  2,
+	"T20":                   3,
+	"ipl":                   4,
+	"Indian Premier League": 4,
+}
 
 type Match struct {
 	Meta struct {
@@ -231,4 +239,98 @@ type VenueDetailsExt struct {
 	PitchType    string `json:"pitch_type"`
 	DateAdded    string `json:"date_added"`
 	Status       int64  `json:"status"`
+}
+
+type PlayerStatsInt struct {
+	MatchID                sql.NullInt64
+	InningsID              sql.NullString
+	BallsBowled            sql.NullInt64
+	BallsFaced             sql.NullInt64
+	BattingOrder           sql.NullInt64
+	BowlingOrder           sql.NullInt64
+	Catches                sql.NullInt64
+	DotBallsPlayed         sql.NullInt64
+	DotsBowled             sql.NullInt64
+	Doubles                sql.NullInt64
+	ExtrasConceded         sql.NullInt64
+	FoursConceded          sql.NullInt64
+	FoursHit               sql.NullInt64
+	IsBatted               sql.NullInt64
+	LastUpdate             sql.NullString
+	MaidenOver             sql.NullInt64
+	PlayedAbandonedMatches sql.NullInt64
+	PlayerID               sql.NullInt64
+	RunOut                 sql.NullInt64
+	RunsConceded           sql.NullInt64
+	RunsScored             sql.NullInt64
+	Singles                sql.NullInt64
+	SixesConceded          sql.NullInt64
+	SixesHit               sql.NullInt64
+	Stumpings              sql.NullInt64
+	TeamID                 sql.NullInt64
+	Triples                sql.NullInt64
+	WicketsTaken           sql.NullInt64
+	OutBowler              sql.NullString
+	OutFielder             sql.NullString
+	OutType                sql.NullString
+	OversBowled            sql.NullString
+	SeasonID               sql.NullString
+	SeasonType             sql.NullString
+}
+
+type PlayerStatsExt struct {
+	Batting  PlayerBattingStats  `json:"batting,omitempty"`
+	Bowling  PlayerBowlingStats  `json:"bowling,omitempty"`
+	Fielding PlayerFieldingStats `json:"fielding,omitempty"`
+
+	MatchID    int64  `json:"match_id,omitempty"`
+	InningsID  string `json:"innings_id,omitempty"`
+	SeasonID   string `json:"season_id,omitempty"`
+	SeasonType string `json:"season_type,omitempty"`
+	PlayerID   int64  `json:"player_id,omitempty"`
+	PlayerName string `json:"player_name,omitempty"`
+	TeamID     int64  `json:"team_id,omitempty"`
+
+	LastUpdate             string `json:"last_update,omitempty"`
+	PlayedAbandonedMatches int64  `json:"played_abandoned_matches,omitempty"`
+}
+
+type PlayerBattingStats struct {
+	BallsFaced     int64   `json:"balls_faced,omitempty"`
+	BattingOrder   int64   `json:"batting_order,omitempty"`
+	DotBallsPlayed int64   `json:"dot_balls_played,omitempty"`
+	Doubles        int64   `json:"doubles,omitempty"`
+	FoursHit       int64   `json:"fours_hit,omitempty"`
+	IsBatted       int64   `json:"is_batted,omitempty"`
+	OutBowler      string  `json:"out_bowler,omitempty"`
+	OutFielder     string  `json:"out_fielder,omitempty"`
+	OutType        string  `json:"out_type,omitempty"`
+	RunsScored     int64   `json:"runs_scored,omitempty"`
+	Singles        int64   `json:"singles,omitempty"`
+	SixesHit       int64   `json:"sixes_hit,omitempty"`
+	Triples        int64   `json:"triples,omitempty"`
+	Fifties        int64   `json:"fifties,omitempty"`
+	Hundreds       int64   `json:"hundreds,omitempty"`
+	Average        float64 `json:"average,omitempty"`
+	HighestScore   int64   `json:"highest_score,omitempty"`
+	StrikeRate     float64 `json:"strike_rate,omitempty"`
+	NotOuts        int64   `json:"not_outs,omitempty"`
+	Ducks          int64   `json:"ducks,omitempty"`
+}
+type PlayerBowlingStats struct {
+	BowlingOrder   int64  `json:"bowling_order,omitempty"`
+	BallsBowled    int64  `json:"balls_bowled,omitempty"`
+	DotsBowled     int64  `json:"dots_bowled,omitempty"`
+	ExtrasConceded int64  `json:"extras_conceded,omitempty"`
+	FoursConceded  int64  `json:"fours_conceded,omitempty"`
+	MaidenOver     int64  `json:"maiden_over,omitempty"`
+	OversBowled    string `json:"overs_bowled,omitempty"`
+	RunsConceded   int64  `json:"runs_conceded,omitempty"`
+	SixesConceded  int64  `json:"sixes_conceded,omitempty"`
+	WicketsTaken   int64  `json:"wickets_taken,omitempty"`
+}
+type PlayerFieldingStats struct {
+	RunOut    int64 `json:"run_out,omitempty"`
+	Stumpings int64 `json:"stumpings,omitempty"`
+	Catches   int64 `json:"catches,omitempty"`
 }
