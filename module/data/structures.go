@@ -279,20 +279,19 @@ type PlayerStatsInt struct {
 }
 
 type PlayerStatsExt struct {
+	MatchID                int64  `json:"match_id,omitempty"`
+	InningsID              string `json:"innings_id,omitempty"`
+	SeasonID               string `json:"season_id,omitempty"`
+	SeasonType             string `json:"season_type,omitempty"`
+	PlayerID               int64  `json:"player_id,omitempty"`
+	PlayerName             string `json:"player_name,omitempty"`
+	TeamID                 int64  `json:"team_id,omitempty"`
+	LastUpdate             string `json:"last_update,omitempty"`
+	PlayedAbandonedMatches int64  `json:"played_abandoned_matches,omitempty"`
+
 	Batting  PlayerBattingStats  `json:"batting,omitempty"`
 	Bowling  PlayerBowlingStats  `json:"bowling,omitempty"`
 	Fielding PlayerFieldingStats `json:"fielding,omitempty"`
-
-	MatchID    int64  `json:"match_id,omitempty"`
-	InningsID  string `json:"innings_id,omitempty"`
-	SeasonID   string `json:"season_id,omitempty"`
-	SeasonType string `json:"season_type,omitempty"`
-	PlayerID   int64  `json:"player_id,omitempty"`
-	PlayerName string `json:"player_name,omitempty"`
-	TeamID     int64  `json:"team_id,omitempty"`
-
-	LastUpdate             string `json:"last_update,omitempty"`
-	PlayedAbandonedMatches int64  `json:"played_abandoned_matches,omitempty"`
 }
 
 type PlayerBattingStats struct {
