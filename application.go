@@ -21,6 +21,7 @@ func main() {
 	dbPort := "3306"
 	dbUser := "root"
 	dbPass := "password"
+	port := ":5000"
 
 	if runtime.GOOS == "windows" {
 		dbPass = ""
@@ -30,6 +31,7 @@ func main() {
 	var env = strings.ToLower(os.Getenv("Environment"))
 	if env == "production" {
 		dbUser = "kunal"
+		port = ":80"
 		fmt.Println("working in Production")
 		sports.DATASET_BASE = `/home/ubuntu/duranz/matchdata/`
 	} else if env == "development" {
@@ -47,5 +49,5 @@ func main() {
 	addRouteHandlers(router)
 
 	fmt.Println("Duranz API initialized")
-	log.Fatal(http.ListenAndServe(":5000", router))
+	log.Fatal(http.ListenAndServe(port, router))
 }
