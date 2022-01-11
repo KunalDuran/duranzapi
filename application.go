@@ -29,8 +29,8 @@ func main() {
 
 	var env = strings.ToLower(os.Getenv("Environment"))
 	if env == "production" {
+		dbUser = "kunal"
 		fmt.Println("working in Production")
-		dbPass = ""
 		sports.DATASET_BASE = `/home/ubuntu/duranz/matchdata/`
 	} else if env == "development" {
 		fmt.Println("working in Development")
