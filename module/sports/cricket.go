@@ -285,11 +285,21 @@ func PlayerStatsAPI(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 			playerFinal.Bowling.OversBowled = fmt.Sprint(playerFinal.Bowling.BallsBowled/6) + "." + fmt.Sprint(playerFinal.Bowling.BallsBowled%6)
 		}
 
-		playerFinal.Batting.Average = util.Round((float64(playerFinal.Batting.RunsScored))/float64(playerFinal.Batting.IsBatted-playerFinal.Batting.NotOuts), 0.01, 2)
-		playerFinal.Batting.StrikeRate = util.Round((float64(playerFinal.Batting.RunsScored)*100)/float64(playerFinal.Batting.BallsFaced), 0.01, 2)
+		if playerFinal.Batting.IsBatted-playerFinal.Batting.NotOuts > 0 {
+			playerFinal.Batting.Average = util.Round((float64(playerFinal.Batting.RunsScored))/float64(playerFinal.Batting.IsBatted-playerFinal.Batting.NotOuts), 0.01, 2)
+		}
 
-		playerFinal.Bowling.Average = util.Round((float64(playerFinal.Bowling.RunsConceded))/float64(playerFinal.Bowling.WicketsTaken), 0.01, 2)
-		playerFinal.Bowling.Economy = util.Round((float64(playerFinal.Bowling.RunsConceded))/(float64(playerFinal.Bowling.BallsBowled)/6), 0.01, 2)
+		if playerFinal.Batting.BallsFaced > 0 {
+			playerFinal.Batting.StrikeRate = util.Round((float64(playerFinal.Batting.RunsScored)*100)/float64(playerFinal.Batting.BallsFaced), 0.01, 2)
+		}
+
+		if playerFinal.Bowling.WicketsTaken > 0 {
+			playerFinal.Bowling.Average = util.Round((float64(playerFinal.Bowling.RunsConceded))/float64(playerFinal.Bowling.WicketsTaken), 0.01, 2)
+		}
+
+		if playerFinal.Bowling.BallsBowled > 0 {
+			playerFinal.Bowling.Economy = util.Round((float64(playerFinal.Bowling.RunsConceded))/(float64(playerFinal.Bowling.BallsBowled)/6), 0.01, 2)
+		}
 
 		playerFinalAll = append(playerFinalAll, playerFinal)
 	}

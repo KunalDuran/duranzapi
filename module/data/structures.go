@@ -3,9 +3,9 @@ package data
 import "database/sql"
 
 var AllDuranzLeagues = map[string]int{
-	"ODI":                   1,
-	"Test":                  2,
-	"T20":                   3,
+	"odi":                   1,
+	"test":                  2,
+	"t20":                   3,
 	"ipl":                   4,
 	"Indian Premier League": 4,
 }
