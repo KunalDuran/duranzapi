@@ -337,3 +337,50 @@ type PlayerFieldingStats struct {
 	Stumpings int64 `json:"stumpings,omitempty"`
 	Catches   int64 `json:"catches,omitempty"`
 }
+
+type DuranzMatchStats struct {
+	MatchID           sql.NullString `json:"match_id"`
+	LeagueID          sql.NullString `json:"league_id"`
+	Gender            sql.NullString `json:"gender"`
+	SeasonID          sql.NullString `json:"season_id"`
+	HomeTeamID        sql.NullString `json:"home_team_id"`
+	AwayTeamID        sql.NullString `json:"away_team_id"`
+	HomeTeamName      sql.NullString `json:"home_team_name"`
+	AwayTeamName      sql.NullString `json:"away_team_name"`
+	VenueID           sql.NullString `json:"venue_id"`
+	Result            sql.NullString `json:"result"`
+	ManOfTheMatch     sql.NullString `json:"man_of_the_match"`
+	TossWinner        sql.NullInt64  `json:"toss_winner"`
+	TossDecision      sql.NullString `json:"toss_decision"`
+	WinningTeam       sql.NullInt64  `json:"winning_team"`
+	CricsheetFileName sql.NullString `json:"cricsheet_file_name"`
+	MatchDate         sql.NullString `json:"match_date"`
+	MatchDateMulti    sql.NullString `json:"match_date_multi"`
+	MatchTime         sql.NullString `json:"match_time"`
+	IsReschedule      sql.NullString `json:"is_reschedule"`
+	IsAbandoned       sql.NullString `json:"is_abandoned"`
+	IsNeutral         sql.NullString `json:"is_neutral"`
+	MatchRefrees      sql.NullString `json:"match_refrees"`
+	ReserveUmpires    sql.NullString `json:"reserve_umpires"`
+	TvUmpires         sql.NullString `json:"tv_umpires"`
+	Umpires           sql.NullString `json:"umpires"`
+	DateAdded         sql.NullString `json:"date_added"`
+	LastUpdate        sql.NullString `json:"last_update"`
+	MatchEndTime      sql.NullString `json:"match_end_time"`
+	Status            sql.NullString `json:"status"`
+}
+
+type DuranzTeamStats struct {
+	TotalMatches    int     `json:"total_matches,omitempty"`
+	MatchWin        int     `json:"match_win,omitempty"`
+	MatchWinPercent float64 `json:"win_percent,omitempty"`
+	BatFirstWin     int     `json:"bat_first_win,omitempty"`
+	ChasingWin      int     `json:"chasing_win,omitempty"`
+	BatFirstWinPer  float64 `json:"bat_first_win_per,omitempty"`
+	ChasingWinPer   float64 `json:"chasing_win_per,omitempty"`
+	AvgScoreInn     float64 `json:"avg_score_inn,omitempty"`
+	HighestScore    int     `json:"highest_score,omitempty"`
+	LowestScore     int     `json:"lowest_score,omitempty"`
+	TossWin         float64 `json:"toss_win,omitempty"`
+	TossWinPercent  float64 `json:"toss_win_percent,omitempty"`
+}

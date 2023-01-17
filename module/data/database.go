@@ -2,6 +2,7 @@ package data
 
 import (
 	"database/sql"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -280,9 +281,9 @@ func InsertVenueDetails(objVenue VenueDetailsExt) {
 	}
 }
 
-func GetPlayerStats(playerName, league, season string) map[string][]PlayerStatsInt {
+func GetPlayerStats(playerName, league, season string, vsTeam int) map[string][]PlayerStatsInt {
 	objAllPlayerStats := map[string][]PlayerStatsInt{}
-	var seasonCond string
+	var seasonCond, vsTeamCond string
 
 	leagueID := AllDuranzLeagues[league]
 	if season != "" {
@@ -290,6 +291,10 @@ func GetPlayerStats(playerName, league, season string) map[string][]PlayerStatsI
 		if err == nil && seasonID > 1950 {
 			seasonCond = " AND pms.season_id = " + season
 		}
+	}
+
+	if vsTeam != 0 {
+		vsTeamCond = fmt.Sprintf(" AND pms.team_id !=%d AND (matches.away_team_id=%d OR matches.home_team_id=%d)", vsTeam, vsTeam, vsTeam)
 	}
 
 	sqlStr := `SELECT player.player_name, 
@@ -330,7 +335,7 @@ func GetPlayerStats(playerName, league, season string) map[string][]PlayerStatsI
 	FROM duranz_cricket_players as player
 	LEFT JOIN duranz_player_match_stats AS pms ON pms.player_id = player.player_id 
 	LEFT JOIN duranz_cricket_matches matches ON matches.match_id = pms.match_id 
-	WHERE player_name = ? AND league_id= ? ` + seasonCond
+	WHERE player_name = ? AND league_id= ? ` + seasonCond + vsTeamCond
 
 	rows, err := SportsDb.Query(sqlStr, playerName, leagueID)
 	if err != nil {
@@ -383,4 +388,108 @@ func GetPlayerStats(playerName, league, season string) map[string][]PlayerStatsI
 		objAllPlayerStats[playerDisplayName] = append(objAllPlayerStats[playerDisplayName], objPlayerStats)
 	}
 	return objAllPlayerStats
+}
+
+func GetTeamStats(teamID int, gender, season string) []DuranzMatchStats {
+	var objAllTeamStats []DuranzMatchStats
+
+	sqlStr := `SELECT 
+	match_id,
+	league_id,
+	gender,
+	season_id,
+	home_team_id,
+	away_team_id,
+	home_team_name,
+	away_team_name,
+	venue_id,
+	result,
+	man_of_the_match,
+	toss_winner,
+	toss_decision,
+	winning_team,
+	cricsheet_file_name,
+	match_date,
+	match_date_multi,
+	match_time,
+	is_reschedule,
+	is_abandoned,
+	is_neutral,
+	match_refrees,
+	reserve_umpires,
+	tv_umpires,
+	umpires,
+	date_added,
+	last_update,
+	match_end_time,
+	status
+	FROM duranz_cricket_matches
+	WHERE (home_team_id = ? OR away_team_id = ?) AND gender = ?`
+
+	rows, err := SportsDb.Query(sqlStr, teamID, teamID, gender)
+	if err != nil {
+		panic(err)
+	}
+
+	for rows.Next() {
+		var objTeamStats DuranzMatchStats
+		err = rows.Scan(
+			&objTeamStats.MatchID,
+			&objTeamStats.LeagueID,
+			&objTeamStats.Gender,
+			&objTeamStats.SeasonID,
+			&objTeamStats.HomeTeamID,
+			&objTeamStats.AwayTeamID,
+			&objTeamStats.HomeTeamName,
+			&objTeamStats.AwayTeamName,
+			&objTeamStats.VenueID,
+			&objTeamStats.Result,
+			&objTeamStats.ManOfTheMatch,
+			&objTeamStats.TossWinner,
+			&objTeamStats.TossDecision,
+			&objTeamStats.WinningTeam,
+			&objTeamStats.CricsheetFileName,
+			&objTeamStats.MatchDate,
+			&objTeamStats.MatchDateMulti,
+			&objTeamStats.MatchTime,
+			&objTeamStats.IsReschedule,
+			&objTeamStats.IsAbandoned,
+			&objTeamStats.IsNeutral,
+			&objTeamStats.MatchRefrees,
+			&objTeamStats.ReserveUmpires,
+			&objTeamStats.TvUmpires,
+			&objTeamStats.Umpires,
+			&objTeamStats.DateAdded,
+			&objTeamStats.LastUpdate,
+			&objTeamStats.MatchEndTime,
+			&objTeamStats.Status)
+		if err != nil {
+			panic(err)
+		}
+		objAllTeamStats = append(objAllTeamStats, objTeamStats)
+	}
+	return objAllTeamStats
+}
+
+func GetTeamID(teamName string) int {
+
+	sqlStr := `SELECT team_id FROM duranz_teams WHERE team_name = ?`
+	var teamID int
+	row := SportsDb.QueryRow(sqlStr, teamName)
+	err := row.Scan(&teamID)
+	if err != nil {
+		panic(err)
+	}
+	return teamID
+}
+
+func GetPlayerID(playerName string) int {
+	sqlStr := `SELECT player_id FROM duranz_cricket_players WHERE player_name = ?`
+	var playerID int
+	row := SportsDb.QueryRow(sqlStr, playerName)
+	err := row.Scan(&playerID)
+	if err != nil {
+		panic(err)
+	}
+	return playerID
 }

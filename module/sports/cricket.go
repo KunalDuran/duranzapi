@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -194,6 +195,7 @@ func PlayerStatsAPI(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 	bio := r.URL.Query().Get("bio")
 	format := util.CleanText(r.URL.Query().Get("format"), true)
 	season := util.CleanText(r.URL.Query().Get("season"), true)
+	vsteam := util.CleanText(r.URL.Query().Get("vsteam"), true)
 
 	if playerName == "all" {
 		// do something
@@ -202,8 +204,12 @@ func PlayerStatsAPI(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 		bio = ""
 	}
 
+	vsTeamID := 0
+	if vsteam != "" {
+		vsTeamID = data.GetTeamID(vsteam)
+	}
 	var playerFinalAll []data.PlayerStatsExt
-	objAllPlayerStats := data.GetPlayerStats(playerName, format, season)
+	objAllPlayerStats := data.GetPlayerStats(playerName, format, season, vsTeamID)
 
 	for pname, pstats := range objAllPlayerStats {
 		var playerFinal data.PlayerStatsExt
@@ -307,4 +313,66 @@ func PlayerStatsAPI(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 	final := util.JSONMessageWrappedObj(http.StatusOK, playerFinalAll)
 	util.WebResponseJSONObject(w, r, http.StatusOK, final)
 
+}
+
+func TeamStatsAPI(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	teamName := p.ByName("team")
+	gender := util.CleanText(r.URL.Query().Get("gender"), true)
+	if gender == "" {
+		gender = "male"
+	}
+	season := util.CleanText(r.URL.Query().Get("season"), true)
+
+	teamID := data.GetTeamID(teamName)
+	objAllTeamStats := data.GetTeamStats(teamID, gender, season)
+	var teamFinalAll data.DuranzTeamStats
+
+	for _, objTeam := range objAllTeamStats {
+
+		if objTeam.TossWinner.Valid {
+			if objTeam.TossWinner.Int64 == int64(teamID) {
+				teamFinalAll.TossWin++
+			}
+		}
+
+		if objTeam.WinningTeam.Valid {
+			if objTeam.WinningTeam.Int64 == int64(teamID) {
+				teamFinalAll.MatchWin++
+
+				// count if team won while batting first or chasing first
+				if objTeam.TossWinner.Valid {
+					if objTeam.TossWinner.Int64 == int64(teamID) { // team won the toss
+						if objTeam.TossDecision.String == "bat" {
+							teamFinalAll.BatFirstWin++
+						} else {
+							teamFinalAll.ChasingWin++
+						}
+					} else {
+						if objTeam.TossDecision.String == "bat" { // other team won the toss
+							teamFinalAll.ChasingWin++
+						} else {
+							teamFinalAll.BatFirstWin++
+						}
+					}
+				}
+			}
+		}
+	}
+
+	teamFinalAll.TotalMatches = len(objAllTeamStats)
+	teamFinalAll.MatchWinPercent = util.Round(float64(teamFinalAll.MatchWin)/float64(teamFinalAll.TotalMatches), 0.01, 2)
+	teamFinalAll.TossWinPercent = util.Round(float64(teamFinalAll.TossWin)/float64(teamFinalAll.TotalMatches), 0.01, 2)
+	teamFinalAll.ChasingWinPer = math.Round((float64(teamFinalAll.ChasingWin)/float64(teamFinalAll.MatchWin))*10000) / 100
+	teamFinalAll.BatFirstWinPer = math.Round((float64(teamFinalAll.BatFirstWin)/float64(teamFinalAll.MatchWin))*10000) / 100
+	//AvgScore /Inn
+	//Highest Score
+	//Lowest Score
+
+	final := util.JSONMessageWrappedObj(http.StatusOK, teamFinalAll)
+	util.WebResponseJSONObject(w, r, http.StatusOK, final)
+
+}
+
+func BatsmanVSBowlerAPI(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	//
 }
