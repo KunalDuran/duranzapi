@@ -378,10 +378,13 @@ func BatsmanVSBowlerAPI(w http.ResponseWriter, r *http.Request, p httprouter.Par
 }
 
 func PlayerList(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	playerList := data.GetPlayerList()
+	matchCount := util.CleanText(r.URL.Query().Get("cnt"), true)
+	if matchCount == "" {
+		matchCount = "10"
+	}
+	playerList := data.GetPlayerList(matchCount)
 	final := util.JSONMessageWrappedObj(http.StatusOK, playerList)
 	util.WebResponseJSONObject(w, r, http.StatusOK, final)
-
 }
 
 func TeamList(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

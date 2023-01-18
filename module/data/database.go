@@ -494,9 +494,10 @@ func GetPlayerID(playerName string) int {
 	return playerID
 }
 
-func GetPlayerList() []string {
-	sqlStr := `SELECT player_name FROM duranz_cricket_players`
-	rows, err := SportsDb.Query(sqlStr)
+func GetPlayerList(matchCount string) []string {
+	sqlStr := `SELECT player_name FROM duranz_cricket_players WHERE player_id IN 
+	(SELECT player_id FROM duranz_player_match_stats GROUP BY player_id  HAVING COUNT(player_id) > ?)`
+	rows, err := SportsDb.Query(sqlStr, matchCount)
 	if err != nil {
 		panic(err)
 	}
