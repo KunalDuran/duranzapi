@@ -376,3 +376,16 @@ func TeamStatsAPI(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 func BatsmanVSBowlerAPI(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	//
 }
+
+func PlayerList(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	playerList := data.GetPlayerList()
+	final := util.JSONMessageWrappedObj(http.StatusOK, playerList)
+	util.WebResponseJSONObject(w, r, http.StatusOK, final)
+
+}
+
+func TeamList(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	teamList := data.GetTeamList()
+	final := util.JSONMessageWrappedObj(http.StatusOK, teamList)
+	util.WebResponseJSONObject(w, r, http.StatusOK, final)
+}

@@ -493,3 +493,41 @@ func GetPlayerID(playerName string) int {
 	}
 	return playerID
 }
+
+func GetPlayerList() []string {
+	sqlStr := `SELECT player_name FROM duranz_cricket_players`
+	rows, err := SportsDb.Query(sqlStr)
+	if err != nil {
+		panic(err)
+	}
+
+	var playerList []string
+	for rows.Next() {
+		var playerName string
+		err = rows.Scan(&playerName)
+		if err != nil {
+			panic(err)
+		}
+		playerList = append(playerList, playerName)
+	}
+	return playerList
+}
+
+func GetTeamList() []string {
+	sqlStr := `SELECT team_name FROM duranz_teams`
+	rows, err := SportsDb.Query(sqlStr)
+	if err != nil {
+		panic(err)
+	}
+
+	var teamList []string
+	for rows.Next() {
+		var teamName string
+		err = rows.Scan(&teamName)
+		if err != nil {
+			panic(err)
+		}
+		teamList = append(teamList, teamName)
+	}
+	return teamList
+}

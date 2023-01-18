@@ -33,6 +33,9 @@ func addRouteHandlers(router *httprouter.Router) {
 	router.GET("/player-vs-team/:player", sports.PlayerStatsAPI)
 	router.GET("/batsman-vs-bowler/", sports.BatsmanVSBowlerAPI)
 
+	router.GET("/player-list/", sports.PlayerList)
+	router.GET("/team-list/", sports.TeamList)
+
 }
 
 // Plain index page content
