@@ -2,6 +2,7 @@ package data
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -495,6 +496,25 @@ func GetPlayerID(playerName string) int {
 }
 
 func GetPlayerList(matchCount string) []string {
+	var playerList []string
+	cachekey := "player-list"
+
+	cacheData, err := CacheGet(cachekey)
+	if err != nil {
+		cacheData = nil
+	}
+
+	if cacheData != nil {
+		err := json.Unmarshal(cacheData, &playerList)
+		if err != nil {
+			cacheData = nil
+		}
+	}
+
+	if cacheData != nil {
+		return playerList
+	}
+
 	sqlStr := `SELECT player_name FROM duranz_cricket_players WHERE player_id IN 
 	(SELECT player_id FROM duranz_player_match_stats GROUP BY player_id  HAVING COUNT(player_id) > ?)`
 	rows, err := SportsDb.Query(sqlStr, matchCount)
@@ -502,7 +522,6 @@ func GetPlayerList(matchCount string) []string {
 		panic(err)
 	}
 
-	var playerList []string
 	for rows.Next() {
 		var playerName string
 		err = rows.Scan(&playerName)
@@ -511,17 +530,42 @@ func GetPlayerList(matchCount string) []string {
 		}
 		playerList = append(playerList, playerName)
 	}
+
+	result, err := json.Marshal(playerList)
+	err = CacheSetExp(cachekey, result, 43200)
+	if err != nil {
+		panic(err)
+	}
+
 	return playerList
 }
 
 func GetTeamList() []string {
+	var teamList []string
+	cachekey := "team-list"
+
+	cacheData, err := CacheGet(cachekey)
+	if err != nil {
+		cacheData = nil
+	}
+
+	if cacheData != nil {
+		err := json.Unmarshal(cacheData, &teamList)
+		if err != nil {
+			cacheData = nil
+		}
+	}
+
+	if cacheData != nil {
+		return teamList
+	}
+
 	sqlStr := `SELECT team_name FROM duranz_teams`
 	rows, err := SportsDb.Query(sqlStr)
 	if err != nil {
 		panic(err)
 	}
 
-	var teamList []string
 	for rows.Next() {
 		var teamName string
 		err = rows.Scan(&teamName)
@@ -530,5 +574,12 @@ func GetTeamList() []string {
 		}
 		teamList = append(teamList, teamName)
 	}
+
+	result, err := json.Marshal(teamList)
+	err = CacheSetExp(cachekey, result, 43200)
+	if err != nil {
+		panic(err)
+	}
+
 	return teamList
 }

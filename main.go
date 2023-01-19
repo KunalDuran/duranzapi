@@ -44,6 +44,15 @@ func main() {
 		log.Panic(err)
 	}
 
+	cacheDataHost := "localhost"
+	cacheDataPort := "6379"
+
+	// Connect the cache server
+	err = data.InitRedis(cacheDataHost, cacheDataPort)
+	if err != nil {
+		log.Panic(err)
+	}
+
 	router := httprouter.New()
 	router.RedirectTrailingSlash = true
 	addRouteHandlers(router)
